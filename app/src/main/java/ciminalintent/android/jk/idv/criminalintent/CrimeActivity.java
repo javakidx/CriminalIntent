@@ -14,7 +14,7 @@ public class CrimeActivity extends SingleFragmentActivity {
         return new CrimeFragment();
     }
 
-    /*@Override
+   @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fragment);
@@ -30,7 +30,7 @@ public class CrimeActivity extends SingleFragmentActivity {
                     .commit();
         }
     }
-
+/*
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
