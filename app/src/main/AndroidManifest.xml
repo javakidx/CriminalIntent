@@ -11,19 +11,19 @@
             android:name=".CrimeActivity"
             android:label="@string/app_name"
             android:theme="@style/Theme.AppCompat.Light">
-            <!--intent-filter>
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter-->
+            </intent-filter>
 
         </activity>
         <activity android:name=".CrimeListActivity">
-            <intent-filter>
+           <!-- <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
 
-            </intent-filter>
+            </intent-filter>-->
 
         </activity>
 
