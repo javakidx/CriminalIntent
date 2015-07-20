@@ -51,4 +51,10 @@ public class Crime
     {
         mDate = date;
     }
+
+    @Override
+    public String toString()
+    {
+        return mTitle;
+    }
 }
