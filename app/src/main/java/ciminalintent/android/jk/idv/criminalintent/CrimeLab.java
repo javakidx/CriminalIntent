@@ -4,6 +4,7 @@ import android.content.Context;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by javakid on 2014/10/9.
@@ -29,17 +30,29 @@ public class CrimeLab
         }
     }
 
-    public static CrimeLab newInstance(Context context)
+    public static CrimeLab get(Context context)
     {
         if(sCrimeLab == null)
         {
-            sCrimeLab = new CrimeLab(context);
+            sCrimeLab = new CrimeLab(context.getApplicationContext());
         }
         return sCrimeLab;
     }
 
-    public List<Crime> getCrimeList()
+    public List<Crime> getCrimes()
     {
         return mCrimeList;
+    }
+
+    public Crime getCrime(UUID id)
+    {
+        for(Crime c : mCrimeList)
+        {
+            if(c.getId().equals(id))
+            {
+                return c;
+            }
+        }
+        return null;
     }
 }

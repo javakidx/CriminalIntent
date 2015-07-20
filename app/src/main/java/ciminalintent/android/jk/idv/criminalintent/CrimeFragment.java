@@ -15,6 +15,8 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.text.DateFormat;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -63,6 +65,7 @@ public class CrimeFragment extends Fragment {
         // Required empty public constructor
     }
 
+    private DateFormat mDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,7 +105,7 @@ public class CrimeFragment extends Fragment {
         });
 
         mDateButton = (Button)v.findViewById(R.id.crime_date);
-        mDateButton.setText(mCrime.getDate().toString());
+        mDateButton.setText(mDateFormat.format( mCrime.getDate()));
         mDateButton.setEnabled(false);
 
         mSolvedCheckBox = (CheckBox)v.findViewById(R.id.crime_solved);
