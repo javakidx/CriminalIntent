@@ -21,6 +21,7 @@ import java.util.List;
  */
 public class CrimeListFragment extends ListFragment
 {
+    private static final int REQUEST_CRIME = 1;
     private static final String TAG = "CrimeListFragment";
     private List<Crime> mCrimes;
     @Override
