@@ -6,12 +6,17 @@ import android.support.v4.app.FragmentManager;
 import android.os.Bundle;
 import android.view.Menu;
 
+import java.util.UUID;
+
 
 public class CrimeActivity extends SingleFragmentActivity {
     @Override
     protected Fragment createFragment()
     {
-        return new CrimeFragment();
+        //return new CrimeFragment();
+        UUID crimeId = (UUID)getIntent().getSerializableExtra(CrimeFragment.EXTRA_CRIME_ID);
+
+        return CrimeFragment.newInstance(crimeId);
     }
 
    @Override
@@ -24,12 +29,15 @@ public class CrimeActivity extends SingleFragmentActivity {
         Fragment fragment = fm.findFragmentById(R.id.fragmentContainer);
         if(fragment == null)
         {
-            fragment = new CrimeFragment();
+            //fragment = new CrimeFragment();
+            fragment = createFragment();
             fm.beginTransaction()
                     .add(R.id.fragmentContainer, fragment)
                     .commit();
         }
     }
+
+
 /*
 
     @Override

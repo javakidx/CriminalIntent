@@ -16,6 +16,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import java.text.DateFormat;
+import java.util.UUID;
 
 
 /**
@@ -27,7 +28,9 @@ import java.text.DateFormat;
  * create an instance of this fragment.
  *
  */
-public class CrimeFragment extends Fragment {
+public class CrimeFragment extends Fragment
+{
+    public static final String EXTRA_CRIME_ID = "com.bignerdranch.android.cirminalintent.crime_id";
     private Crime mCrime;
     private EditText mTtitleField;
     private Button mDateButton;
@@ -65,16 +68,31 @@ public class CrimeFragment extends Fragment {
         // Required empty public constructor
     }
 
+    public static CrimeFragment newInstance(UUID crimeId)
+    {
+        Bundle args = new Bundle();
+        args.putSerializable(EXTRA_CRIME_ID, crimeId);
+
+        CrimeFragment fragment = new CrimeFragment();
+        fragment.setArguments(args);
+
+        return fragment;
+    }
     private DateFormat mDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mCrime = new Crime();
-        if (getArguments() != null) {
+        //mCrime = new Crime();
+        //if (getArguments() != null) {
             //mParam1 = getArguments().getString(ARG_PARAM1);
            // mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+        //}
+
+        //UUID crimeId = (UUID)getActivity().getIntent().getSerializableExtra(EXTRA_CRIME_ID);
+        UUID crimeId = (UUID)getArguments().getSerializable(EXTRA_CRIME_ID);
+
+        mCrime = CrimeLab.get(getActivity()).getCrime(crimeId);
     }
 
     @Override
@@ -83,23 +101,20 @@ public class CrimeFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_crime, container, false);
 
         mTtitleField = (EditText)v.findViewById(R.id.crime_title);
-        mTtitleField.addTextChangedListener(new TextWatcher()
-        {
+        mTtitleField.setText(mCrime.getTitle());
+        mTtitleField.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3)
-            {
+            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
                 //left blank
             }
 
             @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3)
-            {
+            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
                 mCrime.setTitle(charSequence.toString());
             }
 
             @Override
-            public void afterTextChanged(Editable editable)
-            {
+            public void afterTextChanged(Editable editable) {
                 //left blank
             }
         });
@@ -109,6 +124,7 @@ public class CrimeFragment extends Fragment {
         mDateButton.setEnabled(false);
 
         mSolvedCheckBox = (CheckBox)v.findViewById(R.id.crime_solved);
+        mSolvedCheckBox.setChecked(mCrime.isSolved());
         mSolvedCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
