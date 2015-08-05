@@ -1,5 +1,8 @@
 package ciminalintent.android.jk.idv.criminalintent;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Date;
 import java.util.UUID;
 
@@ -18,6 +21,11 @@ public class Crime
     {
         this.mId = UUID.randomUUID();
         this.mDate = new Date();
+    }
+
+    public Crime(JSONObject json) throws JSONException
+    {
+        mId = UUID.fromString(json.getString(""));
     }
 
     public UUID getId() {
