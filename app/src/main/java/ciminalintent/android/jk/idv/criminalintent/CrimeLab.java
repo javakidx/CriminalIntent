@@ -1,6 +1,7 @@
 package ciminalintent.android.jk.idv.criminalintent;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,16 +12,30 @@ import java.util.UUID;
  */
 public class CrimeLab
 {
+    private static final String TAG = "CrimeLab";
+    private static final String FILENAME = "crimes.json";
+
+    private CriminalIntentJSONSerializer mSerializer;
 
     private List<Crime> mCrimeList;
     private static CrimeLab sCrimeLab;
-    private Context mContext;
+    private Context mAppContext;
 
     private CrimeLab(Context context)
     {
-        mContext = context;
-        mCrimeList = new ArrayList<Crime>();
+        mAppContext = context;
+        //mCrimeList = new ArrayList<Crime>();
+        mSerializer = new CriminalIntentJSONSerializer(mAppContext, FILENAME);
 
+        try
+        {
+            mCrimeList = mSerializer.logCrimes();
+        }
+        catch (Exception e)
+        {
+            mCrimeList = new ArrayList<Crime>();
+            Log.e(TAG, "Error loading crimes", e);
+        }
       /*  Crime theCrime;
         for(int i = 0; i < 100; i++)
         {
@@ -65,5 +80,20 @@ public class CrimeLab
     public void deleteCrime(Crime c)
     {
         mCrimeList.remove(c);
+    }
+
+    public boolean saveCrimes()
+    {
+        try
+        {
+            mSerializer.saveCrime(mCrimeList);
+            Log.d(TAG, "crimes saved to file");
+            return true;
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG, "Error saving crimes", e);
+            return false;
+        }
     }
 }

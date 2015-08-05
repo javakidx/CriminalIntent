@@ -130,7 +130,15 @@ public class CrimeListFragment extends ListFragment
         }
 
         ListView listView = (ListView)v.findViewById(android.R.id.list);
-        registerForContextMenu(listView);
+
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB)
+        {
+            registerForContextMenu(listView);
+        }
+        else
+        {
+            listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+        }
 
         return v;
     }

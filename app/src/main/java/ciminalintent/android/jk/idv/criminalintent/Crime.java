@@ -11,6 +11,11 @@ import java.util.UUID;
  */
 public class Crime
 {
+    private static final String JSON_ID = "id";
+    private static final String JSON_TITLE = "title";
+    private static final String JSON_SOLVED = "solved";
+    private static final String JSON_DATE = "date";
+
     private UUID mId;
     private String mTitle;
 
@@ -25,7 +30,14 @@ public class Crime
 
     public Crime(JSONObject json) throws JSONException
     {
-        mId = UUID.fromString(json.getString(""));
+        mId = UUID.fromString(json.getString(JSON_ID));
+        if(json.has(JSON_TITLE))
+        {
+            mTitle = json.getString(JSON_TITLE);
+        }
+
+        mSolved = json.getBoolean(JSON_SOLVED);
+        mDate = new Date(json.getLong(JSON_DATE));
     }
 
     public UUID getId() {
@@ -64,5 +76,16 @@ public class Crime
     public String toString()
     {
         return mTitle;
+    }
+
+    public JSONObject toJSON() throws JSONException
+    {
+        JSONObject json = new JSONObject();
+        json.put(JSON_ID, getId().toString());
+        json.put(JSON_TITLE, getTitle());
+        json.put(JSON_SOLVED, isSolved());
+        json.put(JSON_DATE, getDate().getTime());
+
+        return json;
     }
 }
