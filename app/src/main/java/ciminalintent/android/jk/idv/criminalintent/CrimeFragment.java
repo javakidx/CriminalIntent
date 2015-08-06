@@ -194,6 +194,13 @@ public class CrimeFragment extends Fragment
         //return textView;
     }
 
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+        CrimeLab.get(getActivity()).saveCrimes();
+    }
+
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
