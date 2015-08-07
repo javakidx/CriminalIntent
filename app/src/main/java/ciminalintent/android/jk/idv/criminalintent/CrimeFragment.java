@@ -3,6 +3,8 @@ package ciminalintent.android.jk.idv.criminalintent;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,6 +21,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import java.text.DateFormat;
@@ -41,11 +44,14 @@ public class CrimeFragment extends Fragment
     private static final String DIALOG_DATE = "date";
 
     private static final int REQUEST_DATE = 0;
+    private static final int REQUEST_PHOTO = 1;
+
     private Crime mCrime;
     private EditText mTtitleField;
     private Button mDateButton;
     private CheckBox mSolvedCheckBox;
 
+    private ImageButton mPhotoButton;
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     //private static final String ARG_PARAM1 = "param1";
@@ -182,12 +188,35 @@ public class CrimeFragment extends Fragment
 
         mSolvedCheckBox = (CheckBox)v.findViewById(R.id.crime_solved);
         mSolvedCheckBox.setChecked(mCrime.isSolved());
-        mSolvedCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        mSolvedCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
             @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked)
+            {
                 mCrime.setSolved(isChecked);
             }
         });
+
+        mPhotoButton = (ImageButton)v.findViewById(R.id.crime_imageButton);
+        mPhotoButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent i = new Intent(getActivity(), CrimeCameraActivity.class);
+                //startActivity(i);
+                startActivityForResult(i, REQUEST_PHOTO);
+            }
+        });
+
+        PackageManager pm = getActivity().getPackageManager();
+        boolean hasACamera = pm.hasSystemFeature(PackageManager.FEATURE_CAMERA) || pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT)
+                                || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD && Camera.getNumberOfCameras() > 0);
+
+        if(!hasACamera)
+        {
+            mPhotoButton.setEnabled(false);
+        }
         return v;
         //TextView textView = new TextView(getActivity());
         //textView.setText(R.string.hello_blank_fragment);
