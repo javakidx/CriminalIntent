@@ -1,6 +1,7 @@
 package ciminalintent.android.jk.idv.criminalintent;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -34,6 +35,27 @@ public class CrimeListFragment extends ListFragment
     private static final String TAG = "CrimeListFragment";
 
     private List<Crime> mCrimes;
+    private Callbacks mCallBack;
+
+    public interface Callbacks
+    {
+        void onCrimeSelected(Crime crime);
+    }
+
+    @Override
+    public void onDetach()
+    {
+        super.onDetach();
+        mCallBack = null;
+    }
+
+    @Override
+    public void onAttach(Activity activity)
+    {
+        super.onAttach(activity);
+        mCallBack = (Callbacks)activity;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
@@ -57,9 +79,10 @@ public class CrimeListFragment extends ListFragment
         //Log.d(TAG, c.getTitle() + " was clicked");
         //Intent i = new Intent(getActivity(), CrimeActivity.class);
 
-        Intent i = new Intent(getActivity(), CrimePagerActivity.class);
-        i.putExtra(CrimeFragment.EXTRA_CRIME_ID, c.getId());
-        startActivity(i);
+        //Intent i = new Intent(getActivity(), CrimePagerActivity.class);
+        //i.putExtra(CrimeFragment.EXTRA_CRIME_ID, c.getId());
+        //startActivity(i);
+        mCallBack.onCrimeSelected(c);
     }
 
     @Override
@@ -144,9 +167,11 @@ public class CrimeListFragment extends ListFragment
             case R.id.menu_item_new_crime:
                 Crime crime = new Crime();
                 CrimeLab.get(getActivity()).addCrime(crime);
-                Intent i = new Intent(getActivity(), CrimePagerActivity.class);
-                i.putExtra(CrimeFragment.EXTRA_CRIME_ID, crime.getId());
-                startActivityForResult(i, 0);
+                //Intent i = new Intent(getActivity(), CrimePagerActivity.class);
+                //i.putExtra(CrimeFragment.EXTRA_CRIME_ID, crime.getId());
+                //startActivityForResult(i, 0);
+                ((CrimeAdapter)getListAdapter()).notifyDataSetChanged();
+                mCallBack.onCrimeSelected(crime);
                 return true;
 
             case R.id.menu_item_show_subtitle:
@@ -188,5 +213,10 @@ public class CrimeListFragment extends ListFragment
         }
 
         return super.onContextItemSelected(item);
+    }
+
+    public void updateUI()
+    {
+        ((CrimeAdapter)getListAdapter()).notifyDataSetChanged();
     }
 }

@@ -4,17 +4,20 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Camera;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.NavUtils;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -28,7 +31,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.text.DateFormat;
+
 import java.util.Date;
 import java.util.UUID;
 
@@ -52,6 +55,7 @@ public class CrimeFragment extends Fragment
 
     private static final int REQUEST_DATE = 0;
     private static final int REQUEST_PHOTO = 1;
+    private static final int REQUEST_CONTACT = 2;
 
     private Crime mCrime;
     private EditText mTtitleField;
@@ -59,6 +63,7 @@ public class CrimeFragment extends Fragment
     private CheckBox mSolvedCheckBox;
 
     private ImageButton mPhotoButton;
+    private Button mSuspectButton;
 
     private ImageView mPhotoView;
     // TODO: Rename parameter arguments, choose names that match
@@ -72,6 +77,26 @@ public class CrimeFragment extends Fragment
 
     private OnFragmentInteractionListener mListener;
 
+    private Callbacks mCallbacks;
+
+    @Override
+    public void onDetach()
+    {
+        super.onDetach();
+        mCallbacks = null;
+    }
+
+    @Override
+    public void onAttach(Activity activity)
+    {
+        super.onAttach(activity);
+        mCallbacks = (Callbacks)activity;
+    }
+
+    public interface Callbacks
+    {
+        void onCrimeUpdate(Crime crime);
+    }
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
@@ -103,7 +128,7 @@ public class CrimeFragment extends Fragment
 
         return fragment;
     }
-    private DateFormat mDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
+    //private DateFormat mDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -146,6 +171,7 @@ public class CrimeFragment extends Fragment
         {
             Date date = (Date)data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
             mCrime.setDate(date);
+            mCallbacks.onCrimeUpdate(mCrime);
             //mDateButton.setText(mCrime.getDate().toString());
             updateDate();
         }
@@ -158,9 +184,33 @@ public class CrimeFragment extends Fragment
                 //Log.i(TAG, "filename: " + filename);
                 Photo photo = new Photo(filename);
                 mCrime.setPhoto(photo);
+                mCallbacks.onCrimeUpdate(mCrime);
                 showPhoto();
                 //Log.i(TAG, "Crime: " + mCrime.getTitle() + " has a photo");
             }
+        }
+        else if(requestCode == REQUEST_CONTACT)
+        {
+            Uri contactUri = data.getData();
+
+            String[] queryFields = new String[]{
+                    ContactsContract.Contacts.DISPLAY_NAME
+            };
+
+            Cursor c = getActivity().getContentResolver().query(contactUri, queryFields, null, null, null);
+            if(c.getCount() == 0)
+            {
+                c.close();
+                return;
+            }
+
+            c.moveToFirst();
+            String suspect = c.getString(0);
+            mCrime.setSuspect(suspect);
+            mCallbacks.onCrimeUpdate(mCrime);
+            mSuspectButton.setText(suspect);
+
+            c.close();
         }
     }
 
@@ -190,6 +240,8 @@ public class CrimeFragment extends Fragment
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
                 mCrime.setTitle(charSequence.toString());
+                mCallbacks.onCrimeUpdate(mCrime);
+                getActivity().setTitle(mCrime.getTitle());
             }
 
             @Override
@@ -224,6 +276,7 @@ public class CrimeFragment extends Fragment
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked)
             {
                 mCrime.setSolved(isChecked);
+                mCallbacks.onCrimeUpdate(mCrime);
             }
         });
 
@@ -266,6 +319,38 @@ public class CrimeFragment extends Fragment
                 ImageFragment.newInstance(path).show(fm, DIALOG_IMAGE);
             }
         });
+
+        Button reportButton = (Button)v.findViewById(R.id.crime_reportButton);
+        reportButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent i = new Intent(Intent.ACTION_SEND);
+                i.setType("text/plain");
+                i.putExtra(Intent.EXTRA_TEXT, getCrimeReport());
+                i.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.crime_report_suspect));
+                i = Intent.createChooser(i, getString(R.string.send_report));
+
+                startActivity(i);
+            }
+        });
+
+        mSuspectButton = (Button)v.findViewById(R.id.crime_suspectButton);
+        mSuspectButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent i = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+                startActivityForResult(i, REQUEST_CONTACT);
+            }
+        });
+
+        if(mCrime.getSuspect() != null)
+        {
+            mSuspectButton.setTag(mCrime.getSuspect());
+        }
 
         return v;
         //TextView textView = new TextView(getActivity());
@@ -356,5 +441,37 @@ public class CrimeFragment extends Fragment
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private String getCrimeReport()
+    {
+        String solveString = null;
+        if(mCrime.isSolved())
+        {
+            solveString = getString(R.string.crime_report_solved);
+        }
+        else
+        {
+            solveString = getString(R.string.crime_report_unsolved);
+
+        }
+
+        String dateFormat = "EEE, NMM dd";
+        String dateString = DateFormat.format(dateFormat, mCrime.getDate()).toString();
+
+        String suspect = mCrime.getSuspect();
+
+        if(suspect == null)
+        {
+            suspect = getString(R.string.crime_report_no_suspect);
+        }
+        else
+        {
+            suspect = getString(R.string.crime_report_suspect, suspect);
+        }
+
+        String report = getString(R.string.crime_report, mCrime.getTitle(), dateString, solveString, suspect);
+
+        return report;
     }
 }
